@@ -1,18 +1,25 @@
+# Standard library
 import json
 import logging
+
+# 3rd party
 import mocks
 
-from flask import Flask
-from flask import request
-from mocks.rabbitmq import mock_rmq
-from mocks.mesos_slave import mock_mesos_slv
-from mocks.mesos_slave import state, stats
-#from flask import Response
 from ddtrace import tracer
 from ddtrace.contrib.flask import TraceMiddleware
+from flask import Flask
+from flask import request
+from mocks.mesos_slave import mock_mesos_slv
+from mocks.mesos_slave import state, stats
+from mocks.rabbitmq import mock_rmq
+from mocks.redisdb import cluster_nodes
+
 
 app = Flask(__name__)
+# For Datadog APM
+# http://pypi.datadoghq.com/trace/docs/#module-ddtrace.contrib.flask
 traced_app = TraceMiddleware(app, tracer, service="mocker", distributed_tracing=False)
+
 logger = logging.getLogger('werkzeug')
 handler = logging.FileHandler('logs/access.log')
 logger.addHandler(handler)
@@ -33,6 +40,10 @@ def get_my_ip():
 @app.route("/rabbitmq/queues", methods=["GET"])
 def mock_rabbitmq():
      return mock_rmq()
+
+@app.route("/redisdb/cluster_nodes2", methods=["GET"])
+def mock_redisdb_cluster_nodes2():
+    return cluster_nodes()
 
 @app.route("/redisdb/cluster_nodes", methods=["GET"])
 def mock_redisdb_cluster_nodes():
